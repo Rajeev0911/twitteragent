@@ -1,0 +1,8 @@
+2025-02-15 21:11:00,155 - INFO - Initializing ScheduledTwitterBot...
+2025-02-15 21:11:00,155 - INFO - Twitter client initialized successfully
+2025-02-15 21:11:00,155 - INFO - No existing posted_tweets.txt found. Creating new memory file.
+2025-02-15 21:11:00,156 - INFO - ScheduledTwitterBot initialized successfully!
+2025-02-15 21:11:02,797 - INFO - Found suitable news article: TikTok Comes Back to the US App Store And Play Store
+2025-02-15 21:11:02,802 - INFO - Attempting to post tweet 1/4
+2025-02-15 21:11:02,802 - INFO - Attempt 1/3 to post tweet
+2025-02-15 21:11:04,962 - INFO - Rate limit reached. Waiting 903 seconds...
