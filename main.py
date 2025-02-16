@@ -2101,17 +2101,31 @@ def main():
     try:
         bot = TwitterBot()
         
-        # Schedule posts at specific Indian times (example: 9 AM, 3 PM, 9 PM, 3 AM)
-        schedule.every().day.at("09:00").do(bot.post_tweet)
-        schedule.every().day.at("15:00").do(bot.post_tweet)
-        schedule.every().day.at("21:00").do(bot.post_tweet)
-        schedule.every().day.at("03:00").do(bot.post_tweet)
+        # Define posting times in 24-hour format
+        posting_times = ["09:00", "15:00", "21:00", "03:00"]
         
-        # Log initial schedule
+        # Get current time in IST
+        current_time = datetime.now(bot.timezone)
+        current_hour = current_time.hour
+        current_minute = current_time.minute
+        
+        # Schedule posts based on current time
+        for post_time in posting_times:
+            hour, minute = map(int, post_time.split(':'))
+            
+            # If this time has already passed today, schedule for tomorrow
+            if (hour < current_hour) or (hour == current_hour and minute <= current_minute):
+                schedule.every().day.at(post_time).do(bot.post_tweet)
+                logging.info(f"Scheduled for tomorrow at {post_time}")
+            else:
+                schedule.every().day.at(post_time).do(bot.post_tweet)
+                logging.info(f"Scheduled for today at {post_time}")
+        
+        # Log next scheduled run
         next_run = schedule.next_run()
         if next_run:
-            ist_time = pytz.timezone('Asia/Kolkata').localize(next_run)
-            logging.info(f"First post scheduled for: {ist_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+            ist_time = bot.timezone.localize(next_run)
+            logging.info(f"Next post scheduled for: {ist_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
         
         while True:
             schedule.run_pending()

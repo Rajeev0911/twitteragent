@@ -403,3 +403,23 @@ Too Many Requests
 2025-02-16 12:40:12,855 - INFO - No posts made yet
 2025-02-16 12:40:12,856 - INFO - -----------------------------
 2025-02-16 12:40:12,857 - INFO - First post scheduled for: 2025-02-16 15:00:00 IST
+2025-02-16 12:42:13,838 - INFO - Starting Twitter bot
+2025-02-16 12:42:13,915 - INFO - Twitter API client initialized successfully
+2025-02-16 12:42:13,915 - INFO - ----- Current Bot Status -----
+2025-02-16 12:42:13,915 - INFO - Current time (IST): 2025-02-16 12:42:13 IST
+2025-02-16 12:42:13,916 - INFO - Posts made today: 0/4
+2025-02-16 12:42:13,916 - INFO - No posts made yet
+2025-02-16 12:42:13,916 - INFO - -----------------------------
+2025-02-16 12:42:13,917 - INFO - First post scheduled for: 2025-02-16 15:00:00 IST
+2025-02-16 12:44:32,108 - INFO - Starting Twitter bot
+2025-02-16 12:44:32,242 - INFO - Twitter API client initialized successfully
+2025-02-16 12:44:32,242 - INFO - ----- Current Bot Status -----
+2025-02-16 12:44:32,242 - INFO - Current time (IST): 2025-02-16 12:44:32 IST
+2025-02-16 12:44:32,244 - INFO - Posts made today: 0/4
+2025-02-16 12:44:32,245 - INFO - No posts made yet
+2025-02-16 12:44:32,246 - INFO - -----------------------------
+2025-02-16 12:44:32,247 - INFO - Scheduled for tomorrow at 09:00
+2025-02-16 12:44:32,247 - INFO - Scheduled for today at 15:00
+2025-02-16 12:44:32,248 - INFO - Scheduled for today at 21:00
+2025-02-16 12:44:32,249 - INFO - Scheduled for tomorrow at 03:00
+2025-02-16 12:44:32,249 - INFO - Next post scheduled for: 2025-02-16 15:00:00 IST
