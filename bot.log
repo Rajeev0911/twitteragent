@@ -385,3 +385,13 @@ Too Many Requests
 2025-02-16 01:50:18,542 - INFO - 127.0.0.1 - - [16/Feb/2025 01:50:18] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
 2025-02-16 01:52:10,419 - INFO - 127.0.0.1 - - [16/Feb/2025 01:52:10] "GET /ping HTTP/1.1" 200 -
 2025-02-16 01:52:10,420 - INFO - Self-ping successful.
+2025-02-16 12:25:45,874 - INFO - Starting Twitter bot
+2025-02-16 12:25:45,883 - INFO - Twitter API client initialized successfully
+2025-02-16 12:28:57,843 - INFO - Starting Twitter bot
+2025-02-16 12:28:57,851 - INFO - Twitter API client initialized successfully
+2025-02-16 12:28:57,852 - INFO - ----- Current Bot Status -----
+2025-02-16 12:28:57,852 - INFO - Current time (UTC): 2025-02-16 06:58:57 UTC
+2025-02-16 12:28:57,852 - INFO - Posts made today: 0/4
+2025-02-16 12:28:57,852 - INFO - No posts made yet
+2025-02-16 12:28:57,853 - INFO - -----------------------------
+2025-02-16 12:28:57,854 - INFO - First post scheduled for: 2025-02-16 18:28:57
