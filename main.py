@@ -1743,6 +1743,7 @@
 import os
 import tweepy
 import requests
+import pytz
 from datetime import datetime, timezone, timedelta
 import schedule
 import time
@@ -1781,6 +1782,7 @@ class Config:
         self.POSTS_PER_DAY = 4
         self.MEMORY_FILE = "posted_tweets.txt"
         self.LAST_POST_FILE = "last_post.txt"
+        self.TIMEZONE = pytz.timezone('Asia/Kolkata')
         self.NEWS_API_URL = "https://newsapi.org/v2/top-headlines"
         self.HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"
 
@@ -1856,6 +1858,7 @@ class TweetGenerator:
 class TwitterBot:
     def __init__(self):
         self.config = Config()
+        self.timezone = self.config.TIMEZONE
         self.generator = TweetGenerator()
         self.posted_tweets = self.load_posted_tweets()
         self.daily_post_count = 0
@@ -1889,13 +1892,14 @@ class TwitterBot:
         try:
             with open(self.config.LAST_POST_FILE, "r") as f:
                 timestamp = f.read().strip()
-                return datetime.fromtimestamp(float(timestamp), timezone.utc)
+                utc_time = datetime.fromtimestamp(float(timestamp), timezone.utc)
+                return utc_time.astimezone(self.timezone)
         except (FileNotFoundError, ValueError):
             return None
 
     def save_last_post_time(self):
         """Save the current time as last post time"""
-        current_time = datetime.now(timezone.utc)
+        current_time = datetime.now(self.timezone)
         try:
             with open(self.config.LAST_POST_FILE, "w") as f:
                 f.write(str(current_time.timestamp()))
@@ -1912,9 +1916,9 @@ class TwitterBot:
 
     def log_post_status(self):
         """Log the current posting status"""
-        current_time = datetime.now(timezone.utc)
+        current_time = datetime.now(self.timezone)
         logging.info("----- Current Bot Status -----")
-        logging.info(f"Current time (UTC): {current_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+        logging.info(f"Current time (IST): {current_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
         logging.info(f"Posts made today: {self.daily_post_count}/{self.config.POSTS_PER_DAY}")
         
         if self.last_post_time:
@@ -2065,6 +2069,30 @@ class TwitterBot:
         except Exception as e:
             logging.error(f"Error posting tweet: {str(e)}")
 
+# def main():
+#     """Main function to run the Twitter bot"""
+#     setup_logging()
+#     logging.info("Starting Twitter bot")
+    
+#     try:
+#         bot = TwitterBot()
+        
+#         # Schedule 4 posts per day (every 6 hours)
+#         schedule.every(6).hours.do(bot.post_tweet)
+        
+#         # Log initial schedule
+#         next_run = schedule.next_run()
+#         if next_run:
+#             logging.info(f"First post scheduled for: {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+#         while True:
+#             schedule.run_pending()
+#             time.sleep(60)
+            
+#     except Exception as e:
+#         logging.error(f"Fatal error: {str(e)}")
+#         raise
+
 def main():
     """Main function to run the Twitter bot"""
     setup_logging()
@@ -2073,13 +2101,17 @@ def main():
     try:
         bot = TwitterBot()
         
-        # Schedule 4 posts per day (every 6 hours)
-        schedule.every(6).hours.do(bot.post_tweet)
+        # Schedule posts at specific Indian times (example: 9 AM, 3 PM, 9 PM, 3 AM)
+        schedule.every().day.at("09:00").do(bot.post_tweet)
+        schedule.every().day.at("15:00").do(bot.post_tweet)
+        schedule.every().day.at("21:00").do(bot.post_tweet)
+        schedule.every().day.at("03:00").do(bot.post_tweet)
         
         # Log initial schedule
         next_run = schedule.next_run()
         if next_run:
-            logging.info(f"First post scheduled for: {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
+            ist_time = pytz.timezone('Asia/Kolkata').localize(next_run)
+            logging.info(f"First post scheduled for: {ist_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
         
         while True:
             schedule.run_pending()
