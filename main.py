@@ -794,7 +794,7 @@ def main():
         bot = TwitterBot()
         
         # Define posting times in 24-hour format
-        posting_times = ["09:30", "15:00", "21:00", "03:00"]
+        posting_times = ["09:00", "15:00", "22:00", "03:00"]
         
         # Get current time in IST
         current_time = datetime.now(bot.timezone)
