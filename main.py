@@ -401,6 +401,17 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 import os
 import tweepy
 import requests
@@ -412,6 +423,7 @@ import logging
 import random
 from dotenv import load_dotenv
 import google.generativeai as genai
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 def setup_logging():
     """Configure logging with both file and console handlers"""
@@ -440,8 +452,11 @@ class Config:
         self.NEWS_API_KEY = os.getenv("NEWS_API_KEY")
         self.GOOGLE_AI_API_KEY = os.getenv("GOOGLE_AI_API_KEY")
         
-        # Initialize Google AI
-        genai.configure(api_key=self.GOOGLE_AI_API_KEY)
+        # Validate required environment variables
+        self._validate_env_vars()
+        
+        # Initialize Google AI with retry mechanism
+        self._init_google_ai()
         
         # Settings
         self.POSTS_PER_DAY = 4
@@ -450,17 +465,35 @@ class Config:
         self.TIMEZONE = pytz.timezone('Asia/Kolkata')
         self.NEWS_API_URL = "https://newsapi.org/v2/top-headlines"
         
-        # Configure Google AI Model
-        self.generation_config = {
-            "temperature": 0.7,
-            "top_p": 1,
-            "top_k": 40,
-            "max_output_tokens": 100,
-        }
-        self.model = genai.GenerativeModel(
-            model_name="gemini-pro",
-            generation_config=self.generation_config
-        )
+    def _validate_env_vars(self):
+        """Validate that all required environment variables are present"""
+        required_vars = [
+            "TW_API_KEY", "TW_API_KEY_SECRET", "TW_ACCESS_TOKEN",
+            "TW_ACCESS_TOKEN_SECRET", "TW_BEARER_TOKEN",
+            "NEWS_API_KEY", "GOOGLE_AI_API_KEY"
+        ]
+        missing_vars = [var for var in required_vars if not os.getenv(var)]
+        if missing_vars:
+            raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+    def _init_google_ai(self):
+        """Initialize Google AI with retry mechanism"""
+        try:
+            genai.configure(api_key=self.GOOGLE_AI_API_KEY)
+            self.generation_config = {
+                "temperature": 0.7,
+                "top_p": 1,
+                "top_k": 40,
+                "max_output_tokens": 100,
+            }
+            self.model = genai.GenerativeModel(
+                model_name="gemini-pro",
+                generation_config=self.generation_config
+            )
+        except Exception as e:
+            logging.error(f"Failed to initialize Google AI: {str(e)}")
+            raise
 
 class TweetGenerator:
     """Class to handle tweet generation"""
@@ -547,7 +580,7 @@ class TwitterBot:
     def load_posted_tweets(self):
         """Load previously posted tweets from file"""
         try:
-            with open(self.config.MEMORY_FILE, "r") as f:
+            with open(self.config.MEMORY_FILE, "r", encoding='utf-8') as f:
                 return set(line.strip() for line in f)
         except FileNotFoundError:
             open(self.config.MEMORY_FILE, "a").close()
@@ -556,7 +589,7 @@ class TwitterBot:
     def save_tweet(self, tweet_content):
         """Save tweet to memory file"""
         try:
-            with open(self.config.MEMORY_FILE, "a") as f:
+            with open(self.config.MEMORY_FILE, "a", encoding='utf-8') as f:
                 f.write(f"{tweet_content}\n")
             self.posted_tweets.add(tweet_content)
             logging.info(f"Tweet saved to memory: {tweet_content[:50]}...")
@@ -613,8 +646,9 @@ class TwitterBot:
                 logging.info("Next post is due now")
         logging.info("-----------------------------")
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def setup_twitter_client(self):
-        """Initialize Twitter API client"""
+        """Initialize Twitter API client with retry mechanism"""
         try:
             self.client = tweepy.Client(
                 bearer_token=self.config.TWITTER_BEARER_TOKEN,
@@ -629,8 +663,9 @@ class TwitterBot:
             logging.error(f"Failed to initialize Twitter API: {str(e)}")
             raise
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def get_news(self):
-        """Get news from News API"""
+        """Get news from News API with retry mechanism"""
         params = {
             "category": "technology",
             "language": "en",
@@ -661,33 +696,30 @@ class TwitterBot:
             logging.error(f"News API error: {str(e)}")
             return None, None
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def generate_tweet(self, prompt, topic):
-        """Generate tweet using Google AI Studio"""
+        """Generate tweet using Google AI Studio with retry mechanism"""
         try:
             response = self.config.model.generate_content(prompt)
             
             if response.text:
-                # Clean and format the response
-                tweet_text = response.text.strip()
-                # Remove quotes if present
-                tweet_text = tweet_text.strip('"\'')
-                # Ensure it's not too long for Twitter
+                tweet_text = response.text.strip().strip('"\'')
                 if len(tweet_text) > 280:
                     tweet_text = tweet_text[:277] + "..."
-                
                 return tweet_text
             return ""
             
         except Exception as e:
             logging.error(f"Google AI API error: {str(e)}")
-            return ""
+            # Fall back to pre-written content if AI generation fails
+            return random.choice(self.generator.FALLBACK_INSIGHTS[topic])
 
     def validate_tweet(self, text):
         """Validate tweet content"""
         if not text:
             return False
         words = text.split()
-        return 10 <= len(words) <= 50
+        return 10 <= len(words) <= 50 and len(text) <= 280
 
     def reset_daily_count(self):
         """Reset daily post count if it's a new day"""
@@ -697,19 +729,33 @@ class TwitterBot:
             self.last_reset = current_time
             logging.info("Daily post count reset")
 
-    def post_tweet(self):
-        """Post a tweet"""
-        self.log_post_status()
-        self.reset_daily_count()
-        
-        if self.daily_post_count >= self.config.POSTS_PER_DAY:
-            logging.info("Daily post limit reached")
-            return
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+    def _post_tweet_with_retry(self, tweet_text):
+        """Post tweet with retry mechanism"""
+        response = self.client.create_tweet(text=tweet_text)
+        if response.data:
+            self.save_tweet(tweet_text)
+            self.save_last_post_time()
+            self.daily_post_count += 1
+            logging.info(f"Tweet posted successfully: {tweet_text}")
+            self.log_post_status()
 
+    def post_tweet(self):
+        """Post a tweet with improved error handling"""
         try:
+            self.log_post_status()
+            self.reset_daily_count()
+            
+            if self.daily_post_count >= self.config.POSTS_PER_DAY:
+                logging.info("Daily post limit reached")
+                return
+
             logging.info("Attempting to post new tweet...")
+            
+            # Try to get news first
             news, topic = self.get_news()
             
+            # If news fetching fails or no relevant news found, use fallback content
             if news and topic:
                 logging.info(f"Using news content - Topic: {topic}")
                 prompt = random.choice(self.generator.NEWS_PROMPTS).format(
@@ -718,32 +764,26 @@ class TwitterBot:
                 )
                 tweet_text = self.generate_tweet(prompt, topic)
             else:
-                logging.info("No news found, using fallback content")
+                logging.info("Using fallback content")
                 topic = random.choice(list(self.generator.TOPICS.keys()))
-                insight = random.choice(self.generator.FALLBACK_INSIGHTS[topic])
-                prompt = random.choice(self.generator.TREND_PROMPTS).format(topic=topic)
-                tweet_text = self.generate_tweet(insight, topic)
+                tweet_text = random.choice(self.generator.FALLBACK_INSIGHTS[topic])
 
             if not self.validate_tweet(tweet_text):
-                logging.warning("Generated content failed validation")
-                return
+                logging.warning("Generated content failed validation, using fallback content")
+                tweet_text = random.choice(self.generator.FALLBACK_INSIGHTS[topic])
 
             tweet_text = f"{tweet_text} #{topic}"
 
             if tweet_text in self.posted_tweets:
-                logging.info("Tweet content already posted")
+                logging.info("Tweet content already posted, trying alternative content")
                 return
 
-            response = self.client.create_tweet(text=tweet_text)
-            if response.data:
-                self.save_tweet(tweet_text)
-                self.save_last_post_time()
-                self.daily_post_count += 1
-                logging.info(f"Tweet posted successfully: {tweet_text}")
-                self.log_post_status()
+            # Post tweet with retry mechanism
+            self._post_tweet_with_retry(tweet_text)
             
         except Exception as e:
-            logging.error(f"Error posting tweet: {str(e)}")
+            logging.error(f"Error in post_tweet: {str(e)}")
+            # Continue execution despite errors
 
 def main():
     """Main function to run the Twitter bot"""
@@ -754,7 +794,7 @@ def main():
         bot = TwitterBot()
         
         # Define posting times in 24-hour format
-        posting_times = ["09:00", "15:00", "21:00", "03:00"]
+        posting_times = ["09:30", "15:00", "21:00", "03:00"]
         
         # Get current time in IST
         current_time = datetime.now(bot.timezone)
