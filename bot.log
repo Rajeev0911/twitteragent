@@ -46,3 +46,27 @@
 2025-02-17 11:47:44,908 - INFO - Scheduled for today at 21:00
 2025-02-17 11:47:44,908 - INFO - Scheduled for tomorrow at 03:00
 2025-02-17 11:47:44,908 - INFO - Next post scheduled for: 2025-02-17 15:00:00 IST
+2025-02-17 15:12:33,740 - INFO - Starting Twitter bot
+2025-02-17 15:12:34,038 - INFO - Twitter API client initialized successfully
+2025-02-17 15:12:34,039 - INFO - ----- Current Bot Status -----
+2025-02-17 15:12:34,039 - INFO - Current time (IST): 2025-02-17 15:12:34 IST
+2025-02-17 15:12:34,040 - INFO - Posts made today: 0/4
+2025-02-17 15:12:34,040 - INFO - No posts made yet
+2025-02-17 15:12:34,040 - INFO - -----------------------------
+2025-02-17 15:12:34,041 - INFO - Scheduled for tomorrow at 09:00
+2025-02-17 15:12:34,041 - INFO - Scheduled for tomorrow at 15:00
+2025-02-17 15:12:34,041 - INFO - Scheduled for today at 21:00
+2025-02-17 15:12:34,042 - INFO - Scheduled for tomorrow at 03:00
+2025-02-17 15:12:34,042 - INFO - Next post scheduled for: 2025-02-17 21:00:00 IST
+2025-02-17 15:20:48,317 - INFO - Starting Twitter bot
+2025-02-17 15:20:48,456 - INFO - Twitter API client initialized successfully
+2025-02-17 15:20:48,456 - INFO - ----- Current Bot Status -----
+2025-02-17 15:20:48,456 - INFO - Current time (IST): 2025-02-17 15:20:48 IST
+2025-02-17 15:20:48,457 - INFO - Posts made today: 0/4
+2025-02-17 15:20:48,457 - INFO - No posts made yet
+2025-02-17 15:20:48,457 - INFO - -----------------------------
+2025-02-17 15:20:48,457 - INFO - Scheduled for tomorrow at 09:00
+2025-02-17 15:20:48,457 - INFO - Scheduled for tomorrow at 15:00
+2025-02-17 15:20:48,457 - INFO - Scheduled for today at 21:00
+2025-02-17 15:20:48,457 - INFO - Scheduled for tomorrow at 03:00
+2025-02-17 15:20:48,458 - INFO - Next post scheduled for: 2025-02-17 21:00:00 IST

@@ -401,13 +401,6 @@
 
 
 
-
-
-
-
-
-
-
 import os
 import tweepy
 import requests
@@ -418,6 +411,7 @@ import time
 import logging
 import random
 from dotenv import load_dotenv
+import google.generativeai as genai
 
 def setup_logging():
     """Configure logging with both file and console handlers"""
@@ -444,7 +438,10 @@ class Config:
         self.TWITTER_ACCESS_TOKEN_SECRET = os.getenv("TW_ACCESS_TOKEN_SECRET")
         self.TWITTER_BEARER_TOKEN = os.getenv("TW_BEARER_TOKEN")
         self.NEWS_API_KEY = os.getenv("NEWS_API_KEY")
-        self.HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
+        self.GOOGLE_AI_API_KEY = os.getenv("GOOGLE_AI_API_KEY")
+        
+        # Initialize Google AI
+        genai.configure(api_key=self.GOOGLE_AI_API_KEY)
         
         # Settings
         self.POSTS_PER_DAY = 4
@@ -452,7 +449,18 @@ class Config:
         self.LAST_POST_FILE = "last_post.txt"
         self.TIMEZONE = pytz.timezone('Asia/Kolkata')
         self.NEWS_API_URL = "https://newsapi.org/v2/top-headlines"
-        self.HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"
+        
+        # Configure Google AI Model
+        self.generation_config = {
+            "temperature": 0.7,
+            "top_p": 1,
+            "top_k": 40,
+            "max_output_tokens": 100,
+        }
+        self.model = genai.GenerativeModel(
+            model_name="gemini-pro",
+            generation_config=self.generation_config
+        )
 
 class TweetGenerator:
     """Class to handle tweet generation"""
@@ -468,11 +476,11 @@ class TweetGenerator:
 
     # Prompts for generating tweets from news
     NEWS_PROMPTS = [
-        "Write a technical analysis of this {topic} development: {news}",
-        "Explain the significance of this {topic} news: {news}",
-        "Break down this important {topic} update: {news}",
-        "Analyze the implications of this {topic} news: {news}",
-        "What does this {topic} development mean for the industry: {news}"
+        "Write a technical analysis of this {topic} development in about 200 characters: {news}",
+        "Explain the significance of this {topic} news in about 200 characters: {news}",
+        "Break down this important {topic} update in about 200 characters: {news}",
+        "Analyze the implications of this {topic} news in about 200 characters: {news}",
+        "What does this {topic} development mean for the industry (respond in about 200 characters): {news}"
     ]
 
     # Prompts for generating tweets from trends
@@ -622,7 +630,7 @@ class TwitterBot:
             raise
 
     def get_news(self):
-        """Get news from News API with explicit error handling"""
+        """Get news from News API"""
         params = {
             "category": "technology",
             "language": "en",
@@ -630,7 +638,7 @@ class TwitterBot:
             "pageSize": 10,
             "q": "blockchain OR cryptocurrency OR bitcoin OR AI OR artificial intelligence"
         }
-    
+        
         try:
             response = requests.get(
                 self.config.NEWS_API_URL, 
@@ -639,100 +647,40 @@ class TwitterBot:
             )
             response.raise_for_status()
             articles = response.json().get("articles", [])
-        
+            
             for article in articles:
                 title = article.get('title', '').split(' - ')[0].strip()
                 if title and title not in self.posted_tweets:
                     for topic, keywords in self.generator.TOPICS.items():
                         if any(keyword in title.lower() for keyword in keywords):
-                            return title, topic, True  # Added success flag
-                        
-            return None, None, True  # No relevant news but API call succeeded
-        
+                            return title, topic
+                            
+            return None, None
+            
         except Exception as e:
             logging.error(f"News API error: {str(e)}")
-            return None, None, False
+            return None, None
 
     def generate_tweet(self, prompt, topic):
-        """Generate tweet using Hugging Face API with improved error handling"""
-        headers = {"Authorization": f"Bearer {self.config.HUGGINGFACE_API_KEY}"}
-        payload = {
-            "inputs": prompt,
-            "parameters": {"max_length": 100, "temperature": 0.7}
-        }
-    
-        # Increased max retries and timeout
-        max_retries = 5
-        base_timeout = 20
-    
-        for attempt in range(max_retries):
-            try:
-                # Exponential backoff with jitter
-                if attempt > 0:
-                    backoff = min(300, (2 ** attempt) + random.uniform(0, 1))
-                    logging.info(f"Retry attempt {attempt + 1}/{max_retries} - waiting {backoff:.1f} seconds")
-                    time.sleep(backoff)
-            
-                # Increase timeout with each retry
-                timeout = base_timeout * (attempt + 1)
-            
-                # Check model status before making request
-                status_response = requests.get(
-                    "https://api-inference.huggingface.co/status",
-                    headers=headers,
-                    timeout=10
-                )
-            
-                if status_response.status_code != 200:
-                    logging.warning(f"Model status check failed: {status_response.status_code}")
-                    continue
-            
-                response = requests.post(
-                    self.config.HUGGINGFACE_API_URL,
-                    headers=headers,
-                    json=payload,
-                    timeout=timeout
-                )
-            
-                # Handle specific status codes
-                if response.status_code == 503:
-                    logging.warning("Service temporarily unavailable")
-                    continue
-                elif response.status_code == 429:
-                    logging.warning("Rate limit exceeded")
-                    time.sleep(60)  # Wait longer for rate limits
-                    continue
-            
-                response.raise_for_status()
-            
-                generated_text = response.json()[0].get("generated_text", "")
-                if generated_text:
-                    return generated_text, True
-            
-                logging.warning("Empty response received")
-            
-            except requests.exceptions.Timeout:
-                logging.warning(f"Request timed out after {timeout} seconds")
-            except requests.exceptions.ConnectionError:
-                logging.warning("Connection error occurred")
-            except requests.exceptions.RequestException as e:
-                logging.warning(f"Request failed: {str(e)}")
-    
-        # After all retries failed, try backup model
+        """Generate tweet using Google AI Studio"""
         try:
-            logging.info("Attempting to use backup model (gpt2)")
-            backup_url = "https://api-inference.huggingface.co/models/gpt2"
-            response = requests.post(
-                backup_url,
-                headers=headers,
-                json=payload,
-                timeout=base_timeout
-            )
-            response.raise_for_status()
-            return response.json()[0].get("generated_text", ""), True
+            response = self.config.model.generate_content(prompt)
+            
+            if response.text:
+                # Clean and format the response
+                tweet_text = response.text.strip()
+                # Remove quotes if present
+                tweet_text = tweet_text.strip('"\'')
+                # Ensure it's not too long for Twitter
+                if len(tweet_text) > 280:
+                    tweet_text = tweet_text[:277] + "..."
+                
+                return tweet_text
+            return ""
+            
         except Exception as e:
-            logging.error(f"Backup model also failed: {str(e)}")
-            return "", False
+            logging.error(f"Google AI API error: {str(e)}")
+            return ""
 
     def validate_tweet(self, text):
         """Validate tweet content"""
@@ -750,50 +698,40 @@ class TwitterBot:
             logging.info("Daily post count reset")
 
     def post_tweet(self):
-        """Post a tweet only if both APIs are functioning"""
+        """Post a tweet"""
         self.log_post_status()
         self.reset_daily_count()
-    
+        
         if self.daily_post_count >= self.config.POSTS_PER_DAY:
             logging.info("Daily post limit reached")
             return
 
         try:
             logging.info("Attempting to post new tweet...")
-            news, topic, news_api_success = self.get_news()
-        
-            if not news_api_success:
-                logging.error("NewsAPI failed. Skipping this posting interval.")
-                return
-        
-            tweet_text = None
-            api_success = False
-        
+            news, topic = self.get_news()
+            
             if news and topic:
                 logging.info(f"Using news content - Topic: {topic}")
                 prompt = random.choice(self.generator.NEWS_PROMPTS).format(
                     topic=topic,
                     news=news
                 )
-                tweet_text, api_success = self.generate_tweet(prompt, topic)
+                tweet_text = self.generate_tweet(prompt, topic)
             else:
-                logging.info("No new news found, trying fallback content")
+                logging.info("No news found, using fallback content")
                 topic = random.choice(list(self.generator.TOPICS.keys()))
+                insight = random.choice(self.generator.FALLBACK_INSIGHTS[topic])
                 prompt = random.choice(self.generator.TREND_PROMPTS).format(topic=topic)
-                tweet_text, api_success = self.generate_tweet(prompt, topic)
-        
-            if not api_success:
-                logging.error("Hugging Face API failed. Skipping this posting interval.")
-                return
+                tweet_text = self.generate_tweet(insight, topic)
 
-            if not tweet_text or not self.validate_tweet(tweet_text):
-                logging.error("Generated content failed validation. Skipping this posting interval.")
+            if not self.validate_tweet(tweet_text):
+                logging.warning("Generated content failed validation")
                 return
 
             tweet_text = f"{tweet_text} #{topic}"
 
             if tweet_text in self.posted_tweets:
-                logging.info("Tweet content already posted. Skipping this posting interval.")
+                logging.info("Tweet content already posted")
                 return
 
             response = self.client.create_tweet(text=tweet_text)
@@ -803,34 +741,9 @@ class TwitterBot:
                 self.daily_post_count += 1
                 logging.info(f"Tweet posted successfully: {tweet_text}")
                 self.log_post_status()
-        
-        except Exception as e:
-            logging.error(f"Error in posting process: {str(e)}")
-            logging.info("Skipping this posting interval due to error.")
-
-# def main():
-#     """Main function to run the Twitter bot"""
-#     setup_logging()
-#     logging.info("Starting Twitter bot")
-    
-#     try:
-#         bot = TwitterBot()
-        
-#         # Schedule 4 posts per day (every 6 hours)
-#         schedule.every(6).hours.do(bot.post_tweet)
-        
-#         # Log initial schedule
-#         next_run = schedule.next_run()
-#         if next_run:
-#             logging.info(f"First post scheduled for: {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
-        
-#         while True:
-#             schedule.run_pending()
-#             time.sleep(60)
             
-#     except Exception as e:
-#         logging.error(f"Fatal error: {str(e)}")
-#         raise
+        except Exception as e:
+            logging.error(f"Error posting tweet: {str(e)}")
 
 def main():
     """Main function to run the Twitter bot"""
