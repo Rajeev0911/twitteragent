@@ -34,3 +34,15 @@
 2025-02-17 10:17:37,582 - INFO - Scheduled for today at 21:00
 2025-02-17 10:17:37,583 - INFO - Scheduled for tomorrow at 03:00
 2025-02-17 10:17:37,583 - INFO - Next post scheduled for: 2025-02-17 15:00:00 IST
+2025-02-17 11:47:44,637 - INFO - Starting Twitter bot
+2025-02-17 11:47:44,907 - INFO - Twitter API client initialized successfully
+2025-02-17 11:47:44,907 - INFO - ----- Current Bot Status -----
+2025-02-17 11:47:44,907 - INFO - Current time (IST): 2025-02-17 11:47:44 IST
+2025-02-17 11:47:44,907 - INFO - Posts made today: 0/4
+2025-02-17 11:47:44,907 - INFO - No posts made yet
+2025-02-17 11:47:44,908 - INFO - -----------------------------
+2025-02-17 11:47:44,908 - INFO - Scheduled for tomorrow at 09:00
+2025-02-17 11:47:44,908 - INFO - Scheduled for today at 15:00
+2025-02-17 11:47:44,908 - INFO - Scheduled for today at 21:00
+2025-02-17 11:47:44,908 - INFO - Scheduled for tomorrow at 03:00
+2025-02-17 11:47:44,908 - INFO - Next post scheduled for: 2025-02-17 15:00:00 IST

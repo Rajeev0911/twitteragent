@@ -654,36 +654,85 @@ class TwitterBot:
             return None, None, False
 
     def generate_tweet(self, prompt, topic):
-        """Generate tweet using Hugging Face API with explicit success/failure status"""
+        """Generate tweet using Hugging Face API with improved error handling"""
         headers = {"Authorization": f"Bearer {self.config.HUGGINGFACE_API_KEY}"}
         payload = {
             "inputs": prompt,
             "parameters": {"max_length": 100, "temperature": 0.7}
         }
     
-        max_retries = 3
-        retry_delay = 5  # seconds
+        # Increased max retries and timeout
+        max_retries = 5
+        base_timeout = 20
     
         for attempt in range(max_retries):
             try:
+                # Exponential backoff with jitter
+                if attempt > 0:
+                    backoff = min(300, (2 ** attempt) + random.uniform(0, 1))
+                    logging.info(f"Retry attempt {attempt + 1}/{max_retries} - waiting {backoff:.1f} seconds")
+                    time.sleep(backoff)
+            
+                # Increase timeout with each retry
+                timeout = base_timeout * (attempt + 1)
+            
+                # Check model status before making request
+                status_response = requests.get(
+                    "https://api-inference.huggingface.co/status",
+                    headers=headers,
+                    timeout=10
+                )
+            
+                if status_response.status_code != 200:
+                    logging.warning(f"Model status check failed: {status_response.status_code}")
+                    continue
+            
                 response = requests.post(
                     self.config.HUGGINGFACE_API_URL,
                     headers=headers,
                     json=payload,
-                    timeout=10
+                    timeout=timeout
                 )
-                response.raise_for_status()
-                generated_text = response.json()[0].get("generated_text", "")
-                return generated_text, True  # Added success flag
             
-            except requests.exceptions.RequestException as e:
-                logging.warning(f"Attempt {attempt + 1}/{max_retries} failed: {str(e)}")
-                if attempt < max_retries - 1:
-                    time.sleep(retry_delay)
+                # Handle specific status codes
+                if response.status_code == 503:
+                    logging.warning("Service temporarily unavailable")
                     continue
+                elif response.status_code == 429:
+                    logging.warning("Rate limit exceeded")
+                    time.sleep(60)  # Wait longer for rate limits
+                    continue
+            
+                response.raise_for_status()
+            
+                generated_text = response.json()[0].get("generated_text", "")
+                if generated_text:
+                    return generated_text, True
+            
+                logging.warning("Empty response received")
+            
+            except requests.exceptions.Timeout:
+                logging.warning(f"Request timed out after {timeout} seconds")
+            except requests.exceptions.ConnectionError:
+                logging.warning("Connection error occurred")
+            except requests.exceptions.RequestException as e:
+                logging.warning(f"Request failed: {str(e)}")
     
-        logging.error("All attempts to generate tweet content failed")
-        return "", False
+        # After all retries failed, try backup model
+        try:
+            logging.info("Attempting to use backup model (gpt2)")
+            backup_url = "https://api-inference.huggingface.co/models/gpt2"
+            response = requests.post(
+                backup_url,
+                headers=headers,
+                json=payload,
+                timeout=base_timeout
+            )
+            response.raise_for_status()
+            return response.json()[0].get("generated_text", ""), True
+        except Exception as e:
+            logging.error(f"Backup model also failed: {str(e)}")
+            return "", False
 
     def validate_tweet(self, text):
         """Validate tweet content"""
