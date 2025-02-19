@@ -476,7 +476,7 @@ class Config:
         if missing_vars:
             raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=30))
     def _init_google_ai(self):
         """Initialize Google AI with retry mechanism"""
         try:
@@ -485,7 +485,7 @@ class Config:
                 "temperature": 0.7,
                 "top_p": 1,
                 "top_k": 40,
-                "max_output_tokens": 100,
+                "max_output_tokens": 300,
             }
             self.model = genai.GenerativeModel(
                 model_name="gemini-pro",
@@ -509,11 +509,11 @@ class TweetGenerator:
 
     # Prompts for generating tweets from news
     NEWS_PROMPTS = [
-        "Write a technical analysis of this {topic} development in about 200 characters: {news}",
-        "Explain the significance of this {topic} news in about 200 characters: {news}",
-        "Break down this important {topic} update in about 200 characters: {news}",
-        "Analyze the implications of this {topic} news in about 200 characters: {news}",
-        "What does this {topic} development mean for the industry (respond in about 200 characters): {news}"
+        "Write a technical analysis of this {topic} development in about 600 characters: {news}",
+        "Explain the significance of this {topic} news in about 600 characters: {news}",
+        "Break down this important {topic} update in about 600 characters: {news}",
+        "Analyze the implications of this {topic} news in about 600 characters: {news}",
+        "What does this {topic} development mean for the industry (respond in about 600 characters): {news}"
     ]
 
     # Prompts for generating tweets from trends
@@ -526,43 +526,43 @@ class TweetGenerator:
     ]
 
     # Topic-specific insights for fallback content
-    FALLBACK_INSIGHTS = {
-        'blockchain': [
-            "Blockchain technology revolutionizes data security through decentralized ledgers, enabling trustless transactions and smart contract automation.",
-            "The evolution of blockchain networks introduces new consensus mechanisms and scaling solutions, improving efficiency and adoption.",
-            "Enterprise blockchain solutions transform supply chain management and cross-border transactions, reducing costs and increasing transparency.",
-            "Smart contracts on blockchain networks automate complex processes, reducing intermediaries and increasing efficiency.",
-            "Blockchain interoperability protocols enable seamless communication between different networks, expanding use cases."
-        ],
-        'cryptocurrency': [
-            "Cryptocurrency adoption drives financial innovation through decentralized finance protocols and digital asset management.",
-            "Digital currencies reshape traditional banking through instant, borderless transactions and programmable money features.",
-            "The cryptocurrency ecosystem expands with layer-2 scaling solutions and interoperability protocols.",
-            "Decentralized finance protocols create new possibilities for lending, borrowing, and trading digital assets.",
-            "Stablecoins bridge traditional finance with crypto markets, enabling efficient cross-border transactions."
-        ],
-        'bitcoin': [
-            "Bitcoin's Lightning Network enables instant micropayments and scales transaction capabilities while maintaining decentralization.",
-            "Institutional Bitcoin adoption increases as corporations recognize its potential as a digital store of value.",
-            "Bitcoin mining evolution focuses on renewable energy sources and efficiency improvements.",
-            "Layer-2 scaling solutions enhance Bitcoin's transaction capacity while preserving security.",
-            "Bitcoin's role as digital gold grows with increasing institutional investment and adoption."
-        ],
-        'ai': [
-            "Advanced AI models demonstrate unprecedented natural language understanding and generation capabilities.",
-            "Machine learning systems revolutionize healthcare through improved diagnosis and treatment recommendations.",
-            "AI development in autonomous systems creates new possibilities for automation and human augmentation.",
-            "Transformer models push the boundaries of language understanding and generation in AI applications.",
-            "AI-powered tools enhance productivity across industries through automation and intelligent assistance."
-        ],
-        'tech': [
-            "Quantum computing advances promise to revolutionize cryptography and complex problem-solving.",
-            "Edge computing and 5G networks enable new real-time applications and improved IoT device performance.",
-            "Open-source technology development accelerates innovation and collaboration in software.",
-            "Cloud computing evolution enables more efficient and scalable business operations.",
-            "Digital transformation accelerates with adoption of AI, blockchain, and IoT technologies."
-        ]
-    }
+    # FALLBACK_INSIGHTS = {
+    #     'blockchain': [
+    #         "Blockchain technology revolutionizes data security through decentralized ledgers, enabling trustless transactions and smart contract automation.",
+    #         "The evolution of blockchain networks introduces new consensus mechanisms and scaling solutions, improving efficiency and adoption.",
+    #         "Enterprise blockchain solutions transform supply chain management and cross-border transactions, reducing costs and increasing transparency.",
+    #         "Smart contracts on blockchain networks automate complex processes, reducing intermediaries and increasing efficiency.",
+    #         "Blockchain interoperability protocols enable seamless communication between different networks, expanding use cases."
+    #     ],
+    #     'cryptocurrency': [
+    #         "Cryptocurrency adoption drives financial innovation through decentralized finance protocols and digital asset management.",
+    #         "Digital currencies reshape traditional banking through instant, borderless transactions and programmable money features.",
+    #         "The cryptocurrency ecosystem expands with layer-2 scaling solutions and interoperability protocols.",
+    #         "Decentralized finance protocols create new possibilities for lending, borrowing, and trading digital assets.",
+    #         "Stablecoins bridge traditional finance with crypto markets, enabling efficient cross-border transactions."
+    #     ],
+    #     'bitcoin': [
+    #         "Bitcoin's Lightning Network enables instant micropayments and scales transaction capabilities while maintaining decentralization.",
+    #         "Institutional Bitcoin adoption increases as corporations recognize its potential as a digital store of value.",
+    #         "Bitcoin mining evolution focuses on renewable energy sources and efficiency improvements.",
+    #         "Layer-2 scaling solutions enhance Bitcoin's transaction capacity while preserving security.",
+    #         "Bitcoin's role as digital gold grows with increasing institutional investment and adoption."
+    #     ],
+    #     'ai': [
+    #         "Advanced AI models demonstrate unprecedented natural language understanding and generation capabilities.",
+    #         "Machine learning systems revolutionize healthcare through improved diagnosis and treatment recommendations.",
+    #         "AI development in autonomous systems creates new possibilities for automation and human augmentation.",
+    #         "Transformer models push the boundaries of language understanding and generation in AI applications.",
+    #         "AI-powered tools enhance productivity across industries through automation and intelligent assistance."
+    #     ],
+    #     'tech': [
+    #         "Quantum computing advances promise to revolutionize cryptography and complex problem-solving.",
+    #         "Edge computing and 5G networks enable new real-time applications and improved IoT device performance.",
+    #         "Open-source technology development accelerates innovation and collaboration in software.",
+    #         "Cloud computing evolution enables more efficient and scalable business operations.",
+    #         "Digital transformation accelerates with adoption of AI, blockchain, and IoT technologies."
+    #     ]
+    # }
 
 class TwitterBot:
     def __init__(self):
@@ -646,7 +646,7 @@ class TwitterBot:
                 logging.info("Next post is due now")
         logging.info("-----------------------------")
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=30))
     def setup_twitter_client(self):
         """Initialize Twitter API client with retry mechanism"""
         try:
@@ -663,14 +663,14 @@ class TwitterBot:
             logging.error(f"Failed to initialize Twitter API: {str(e)}")
             raise
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=30))
     def get_news(self):
         """Get news from News API with retry mechanism"""
         params = {
             "category": "technology",
             "language": "en",
             "apiKey": self.config.NEWS_API_KEY,
-            "pageSize": 10,
+            "pageSize": 30,
             "q": "blockchain OR cryptocurrency OR bitcoin OR AI OR artificial intelligence"
         }
         
@@ -678,7 +678,7 @@ class TwitterBot:
             response = requests.get(
                 self.config.NEWS_API_URL, 
                 params=params,
-                timeout=10
+                timeout=30
             )
             response.raise_for_status()
             articles = response.json().get("articles", [])
@@ -696,7 +696,7 @@ class TwitterBot:
             logging.error(f"News API error: {str(e)}")
             return None, None
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=30))
     def generate_tweet(self, prompt, topic):
         """Generate tweet using Google AI Studio with retry mechanism"""
         try:
@@ -719,7 +719,7 @@ class TwitterBot:
         if not text:
             return False
         words = text.split()
-        return 10 <= len(words) <= 50 and len(text) <= 280
+        return 30 <= len(words) <= 50 and len(text) <= 280
 
     def reset_daily_count(self):
         """Reset daily post count if it's a new day"""
@@ -729,7 +729,7 @@ class TwitterBot:
             self.last_reset = current_time
             logging.info("Daily post count reset")
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=30))
     def _post_tweet_with_retry(self, tweet_text):
         """Post tweet with retry mechanism"""
         response = self.client.create_tweet(text=tweet_text)
