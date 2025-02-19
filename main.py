@@ -476,7 +476,7 @@ class Config:
         if missing_vars:
             raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=30))
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def _init_google_ai(self):
         """Initialize Google AI with retry mechanism"""
         try:
@@ -646,7 +646,7 @@ class TwitterBot:
                 logging.info("Next post is due now")
         logging.info("-----------------------------")
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=30))
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def setup_twitter_client(self):
         """Initialize Twitter API client with retry mechanism"""
         try:
@@ -663,14 +663,14 @@ class TwitterBot:
             logging.error(f"Failed to initialize Twitter API: {str(e)}")
             raise
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=30))
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def get_news(self):
         """Get news from News API with retry mechanism"""
         params = {
             "category": "technology",
             "language": "en",
             "apiKey": self.config.NEWS_API_KEY,
-            "pageSize": 30,
+            "pageSize": 10,
             "q": "blockchain OR cryptocurrency OR bitcoin OR AI OR artificial intelligence"
         }
         
@@ -678,7 +678,7 @@ class TwitterBot:
             response = requests.get(
                 self.config.NEWS_API_URL, 
                 params=params,
-                timeout=30
+                timeout=10
             )
             response.raise_for_status()
             articles = response.json().get("articles", [])
@@ -696,7 +696,7 @@ class TwitterBot:
             logging.error(f"News API error: {str(e)}")
             return None, None
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=30))
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def generate_tweet(self, prompt, topic):
         """Generate tweet using Google AI Studio with retry mechanism"""
         try:
@@ -719,7 +719,9 @@ class TwitterBot:
         if not text:
             return False
         words = text.split()
-        return 30 <= len(words) <= 50 and len(text) <= 280
+        # return 10 <= len(words) <= 50 and len(text) <= 280
+        return 30 <= len(words) <= 70 and len(text) <= 350
+
 
     def reset_daily_count(self):
         """Reset daily post count if it's a new day"""
@@ -729,7 +731,7 @@ class TwitterBot:
             self.last_reset = current_time
             logging.info("Daily post count reset")
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=30))
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def _post_tweet_with_retry(self, tweet_text):
         """Post tweet with retry mechanism"""
         response = self.client.create_tweet(text=tweet_text)
