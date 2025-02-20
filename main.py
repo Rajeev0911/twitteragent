@@ -907,7 +907,7 @@ class Config:
                 "temperature": 0.7,
                 "top_p": 1,
                 "top_k": 40,
-                "max_output_tokens": 300,
+                "max_output_tokens": 180,  # Reduced to get shorter responses
             }
             self.model = genai.GenerativeModel(
                 model_name="gemini-pro",
@@ -938,60 +938,60 @@ class TweetGenerator:
         'tech': ['#technology', '#innovation', '#digitalfuture', '#techtrends', '#emerging']
     }
 
-    # Prompts for generating tweets from news - updated to encourage longer responses
+    # Prompts for generating tweets from news - updated to ensure shorter responses
     NEWS_PROMPTS = [
-        "Write an informative technical analysis of this {topic} development (aim for 40-50 words): {news}",
-        "Explain the significance and potential impact of this {topic} news (aim for 40-50 words): {news}",
-        "Break down this important {topic} update and its implications for the industry (aim for 40-50 words): {news}",
-        "Analyze the technical implications of this {topic} news for industry professionals (aim for 40-50 words): {news}",
-        "What does this {topic} development mean for the ecosystem? Provide detailed insights (aim for 40-50 words): {news}"
+        "Write a concise technical analysis of this {topic} development (20-30 words only): {news}",
+        "Briefly explain the significance of this {topic} news (20-30 words only): {news}",
+        "Summarize this important {topic} update in 20-30 words only: {news}",
+        "Give a brief technical take on this {topic} news (20-30 words only): {news}",
+        "What's the key takeaway from this {topic} development? (20-30 words only): {news}"
     ]
 
-    # Prompts for generating tweets from trends
+    # Prompts for generating tweets from trends - updated for shorter responses
     TREND_PROMPTS = [
-        "Share detailed insights about the latest developments in {topic} (aim for 40-50 words)",
-        "Analyze current technical trends in {topic} technology with specific examples (aim for 40-50 words)",
-        "Explain how {topic} is transforming the industry with technical details (aim for 40-50 words)",
-        "Discuss the future technical implications of {topic} advancement with specifics (aim for 40-50 words)",
-        "Highlight key technical innovations in {topic} development with examples (aim for 40-50 words)"
+        "Share insights about the latest {topic} developments in exactly 20-30 words.",
+        "Briefly analyze current {topic} technology trends in exactly 20-30 words.",
+        "Explain how {topic} is transforming the industry in exactly 20-30 words.",
+        "Discuss one key future implication of {topic} advancement in exactly 20-30 words.",
+        "Highlight one key innovation in {topic} development in exactly 20-30 words."
     ]
 
-    # Topic-specific insights for fallback content
+    # Topic-specific insights for fallback content - enhanced to have >20 words
     FALLBACK_INSIGHTS = {
         'blockchain': [
-            "Blockchain technology revolutionizes data security through decentralized ledgers, enabling trustless transactions and smart contract automation.",
-            "The evolution of blockchain networks introduces new consensus mechanisms and scaling solutions, improving efficiency and adoption.",
-            "Enterprise blockchain solutions transform supply chain management and cross-border transactions, reducing costs and increasing transparency.",
-            "Smart contracts on blockchain networks automate complex processes, reducing intermediaries and increasing efficiency.",
-            "Blockchain interoperability protocols enable seamless communication between different networks, expanding use cases."
+            "Blockchain technology revolutionizes data security through decentralized ledgers, enabling trustless transactions and smart contract automation. The protocol design ensures tamper-proof records and transparent verification processes.",
+            "The evolution of blockchain networks introduces new consensus mechanisms and scaling solutions, improving efficiency and adoption. Layer-2 solutions address throughput limitations while maintaining security guarantees on the main chain.",
+            "Enterprise blockchain solutions transform supply chain management and cross-border transactions, reducing costs and increasing transparency. Real-time tracking capabilities enable unprecedented visibility into product journeys from origin to consumer.",
+            "Smart contracts on blockchain networks automate complex processes, reducing intermediaries and increasing efficiency. These self-executing agreements operate deterministically when predefined conditions are met, enabling trustless cooperation.",
+            "Blockchain interoperability protocols enable seamless communication between different networks, expanding use cases and ecosystem functionality. Cross-chain bridges facilitate asset transfers while maintaining cryptographic verification of transaction integrity."
         ],
         'cryptocurrency': [
-            "Cryptocurrency adoption drives financial innovation through decentralized finance protocols and digital asset management.",
-            "Digital currencies reshape traditional banking through instant, borderless transactions and programmable money features.",
-            "The cryptocurrency ecosystem expands with layer-2 scaling solutions and interoperability protocols.",
-            "Decentralized finance protocols create new possibilities for lending, borrowing, and trading digital assets.",
-            "Stablecoins bridge traditional finance with crypto markets, enabling efficient cross-border transactions."
+            "Cryptocurrency adoption drives financial innovation through decentralized finance protocols and digital asset management. The permissionless architecture enables global participation in financial markets without traditional intermediaries or geographical restrictions.",
+            "Digital currencies reshape traditional banking through instant, borderless transactions and programmable money features. The elimination of settlement delays and third-party dependencies significantly reduces friction in global commerce.",
+            "The cryptocurrency ecosystem expands with layer-2 scaling solutions and interoperability protocols. These technological advancements address throughput limitations while maintaining the security guarantees of underlying blockchain networks.",
+            "Decentralized finance protocols create new possibilities for lending, borrowing, and trading digital assets without traditional intermediaries. Smart contract automation enables transparent, trustless financial operations with reduced counterparty risk.",
+            "Stablecoins bridge traditional finance with crypto markets, enabling efficient cross-border transactions and reducing volatility exposure. These price-stable assets maintain value parity with fiat currencies while leveraging blockchain efficiency."
         ],
         'bitcoin': [
-            "Bitcoin's Lightning Network enables instant micropayments and scales transaction capabilities while maintaining decentralization.",
-            "Institutional Bitcoin adoption increases as corporations recognize its potential as a digital store of value.",
-            "Bitcoin mining evolution focuses on renewable energy sources and efficiency improvements.",
-            "Layer-2 scaling solutions enhance Bitcoin's transaction capacity while preserving security.",
-            "Bitcoin's role as digital gold grows with increasing institutional investment and adoption."
+            "Bitcoin's Lightning Network enables instant micropayments and scales transaction capabilities while maintaining decentralization. This layer-2 solution creates payment channels that operate off-chain for efficiency with periodic settlement to the main blockchain.",
+            "Institutional Bitcoin adoption increases as corporations recognize its potential as a digital store of value against inflation and currency debasement. Corporate treasury allocations represent a significant shift in mainstream financial sentiment.",
+            "Bitcoin mining evolution focuses on renewable energy sources and efficiency improvements to address environmental concerns. New operations increasingly utilize stranded energy assets and excess hydroelectric capacity to minimize carbon footprint.",
+            "Layer-2 scaling solutions enhance Bitcoin's transaction capacity while preserving security through cryptographic verification mechanisms. These innovations maintain Bitcoin's decentralized nature while addressing throughput limitations for everyday use cases.",
+            "Bitcoin's role as digital gold grows with increasing institutional investment and adoption as a long-term store of value. The fixed supply cap and algorithmically enforced scarcity create monetary properties resistant to inflationary policies."
         ],
         'ai': [
-            "Advanced AI models demonstrate unprecedented natural language understanding and generation capabilities.",
-            "Machine learning systems revolutionize healthcare through improved diagnosis and treatment recommendations.",
-            "AI development in autonomous systems creates new possibilities for automation and human augmentation.",
-            "Transformer models push the boundaries of language understanding and generation in AI applications.",
-            "AI-powered tools enhance productivity across industries through automation and intelligent assistance."
+            "Advanced AI models demonstrate unprecedented natural language understanding and generation capabilities, transforming human-computer interaction paradigms. These systems process contextual relationships in text with remarkable semantic comprehension and adaptation.",
+            "Machine learning systems revolutionize healthcare through improved diagnosis and treatment recommendations based on pattern recognition in medical imaging and patient data. These applications accelerate identification of conditions and personalized intervention strategies.",
+            "AI development in autonomous systems creates new possibilities for automation and human augmentation across transportation, manufacturing, and service industries. Enhanced computer vision and decision-making algorithms enable safer operational capabilities.",
+            "Transformer models push the boundaries of language understanding and generation in AI applications through attention mechanisms and parallel processing capabilities. These architectural innovations enable contextual comprehension across longer sequences of information.",
+            "AI-powered tools enhance productivity across industries through automation and intelligent assistance for complex cognitive tasks. Advanced natural language processing enables intuitive interfaces for database queries and content generation."
         ],
         'tech': [
-            "Quantum computing advances promise to revolutionize cryptography and complex problem-solving.",
-            "Edge computing and 5G networks enable new real-time applications and improved IoT device performance.",
-            "Open-source technology development accelerates innovation and collaboration in software.",
-            "Cloud computing evolution enables more efficient and scalable business operations.",
-            "Digital transformation accelerates with adoption of AI, blockchain, and IoT technologies."
+            "Quantum computing advances promise to revolutionize cryptography and complex problem-solving through fundamentally different computational paradigms. These systems leverage quantum mechanical properties to address computational problems intractable for classical computers.",
+            "Edge computing and 5G networks enable new real-time applications and improved IoT device performance through reduced latency and distributed processing capabilities. This infrastructure transformation supports mission-critical systems requiring millisecond response times.",
+            "Open-source technology development accelerates innovation and collaboration in software through transparent code sharing and community contribution models. These collaborative approaches democratize access to cutting-edge tools and reduce redundant development efforts.",
+            "Cloud computing evolution enables more efficient and scalable business operations through serverless architectures and containerization technologies. These advancements abstract infrastructure management and enable fine-grained resource allocation based on actual usage patterns.",
+            "Digital transformation accelerates with integration of AI, blockchain, and IoT technologies creating synergistic capabilities across previously isolated systems. Organizations leveraging these complementary technologies achieve unprecedented operational intelligence and automation capabilities."
         ]
     }
 
@@ -1165,7 +1165,7 @@ class TwitterBot:
         
         # Add primary topic hashtag if not already included
         primary_tag = f"#{topic}"
-        if primary_tag not in hashtags:
+        if primary_tag not in hashtags and primary_tag.lower() not in [h.lower() for h in hashtags]:
             hashtags.append(primary_tag)
             
         # Shuffle hashtags for variety
@@ -1176,25 +1176,62 @@ class TwitterBot:
         
         return f"{tweet_text} {hashtag_text}"
 
+    def prepare_tweet_text(self, content, topic):
+        """Prepare and format tweet text to fit Twitter's character limit"""
+        tweet_content = content.strip()
+        
+        # Count words in content (without hashtags)
+        words = [w for w in tweet_content.split() if not w.startswith('#')]
+        
+        # If content has more than 20 words and is too long, truncate it
+        if len(words) > 20 and len(tweet_content) > 200:
+            # Find a good truncation point (end of sentence if possible)
+            truncation_points = [tweet_content.rfind('. ', 0, 190), 
+                                tweet_content.rfind('! ', 0, 190),
+                                tweet_content.rfind('? ', 0, 190)]
+            
+            trunc_point = max(truncation_points)
+            if trunc_point == -1:  # No sentence break found
+                trunc_point = min(190, len(tweet_content))
+                
+            tweet_content = tweet_content[:trunc_point+1].strip()
+            
+        # Add hashtags
+        tweet_with_hashtags = self.add_hashtags(tweet_content, topic)
+        
+        # Final check to fit Twitter's 280 character limit
+        if len(tweet_with_hashtags) > 280:
+            # If still too long, trim the content part, not the hashtags
+            hashtags_text = " ".join([h for h in tweet_with_hashtags.split() if h.startswith('#')])
+            content_text = " ".join([w for w in tweet_with_hashtags.split() if not w.startswith('#')])
+            
+            # Calculate how much content we can keep
+            max_content_len = 280 - len(hashtags_text) - 4  # 4 chars for "... " separator
+            if max_content_len < 50:  # If almost no room for content
+                # Keep at least some content, reduce hashtags instead
+                content_text = content_text[:50]
+                hashtags_list = hashtags_text.split()
+                while len(content_text) + len(" ".join(hashtags_list)) + 4 > 280 and hashtags_list:
+                    hashtags_list.pop()
+                tweet_with_hashtags = f"{content_text}... {' '.join(hashtags_list)}"
+            else:
+                tweet_with_hashtags = f"{content_text[:max_content_len]}... {hashtags_text}"
+        
+        return tweet_with_hashtags
+
     def validate_tweet(self, text):
         """Validate tweet content - ensure it has >20 words and fits character limit"""
         if not text:
+            logging.warning("Empty tweet text")
             return False
             
-        # Count words (excluding hashtags)
+        # Count words (excluding hashtags) 
         non_hashtag_words = [word for word in text.split() if not word.startswith('#')]
         word_count = len(non_hashtag_words)
         
-        # Check if tweet meets criteria (>20 words, fits character limit)
-        meets_word_count = word_count > 20
-        fits_char_limit = len(text) <= 280
+        logging.info(f"Tweet validation - Words: {word_count}, Chars: {len(text)}")
         
-        if not meets_word_count:
-            logging.warning(f"Tweet too short: {word_count} words")
-        if not fits_char_limit:
-            logging.warning(f"Tweet too long: {len(text)} characters")
-            
-        return meets_word_count and fits_char_limit
+        return word_count > 20 and len(text) <= 280
 
     def reset_daily_count(self):
         """Reset daily post count if it's a new day"""
@@ -1207,7 +1244,7 @@ class TwitterBot:
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def _post_tweet_with_retry(self, tweet_text):
         """Post tweet with retry mechanism"""
-        # Ensure tweet fits Twitter's character limit
+        # Final safety check for character limit
         if len(tweet_text) > 280:
             tweet_text = tweet_text[:277] + "..."
             
@@ -1234,7 +1271,6 @@ class TwitterBot:
             
             # Try to get news first
             news, topic = self.get_news()
-            use_ai = True
             
             # If news fetching fails or no relevant news found, use trend prompt
             if news and topic:
@@ -1250,27 +1286,38 @@ class TwitterBot:
                 prompt = random.choice(self.generator.TREND_PROMPTS).format(topic=topic)
             
             # Generate tweet content
-            tweet_content = self.generate_tweet(prompt, topic) if use_ai else ""
+            ai_content = self.generate_tweet(prompt, topic)
             
-            # Validate tweet content
-            if not tweet_content or not self.validate_tweet(tweet_content):
-                logging.warning("Generated content invalid or empty, using fallback content")
-                tweet_content = random.choice(self.generator.FALLBACK_INSIGHTS[topic])
+            # Count words in AI-generated content (without hashtags)
+            ai_words = [w for w in ai_content.split() if not w.startswith('#')]
+            fallback_content = random.choice(self.generator.FALLBACK_INSIGHTS[topic])
             
-            # Add hashtags
-            tweet_text = self.add_hashtags(tweet_content, topic)
-            
-            # Final validation
-            if tweet_text in self.posted_tweets:
-                logging.info("Tweet content already posted, trying alternative content")
-                fallback_content = random.choice(self.generator.FALLBACK_INSIGHTS[topic])
-                tweet_text = self.add_hashtags(fallback_content, topic)
-            
-            # Post tweet with retry mechanism
-            if self.validate_tweet(tweet_text):
-                self._post_tweet_with_retry(tweet_text)
+            # Choose between AI content and fallback based on word count
+            if len(ai_words) > 20:
+                logging.info("Using AI-generated content")
+                tweet_content = ai_content
             else:
-                logging.error("Final tweet content failed validation, skipping post")
+                logging.info(f"AI content too short ({len(ai_words)} words), using fallback")
+                tweet_content = fallback_content
+            
+            # Prepare final tweet text with proper formatting and hashtags
+            final_tweet = self.prepare_tweet_text(tweet_content, topic)
+            
+            # Check if tweet was already posted
+            if final_tweet in self.posted_tweets:
+                logging.info("Tweet content already posted, using alternative content")
+                alternative_content = random.choice(self.generator.FALLBACK_INSIGHTS[topic])
+                final_tweet = self.prepare_tweet_text(alternative_content, topic)
+            
+            # Final validation and posting
+            if len(final_tweet) <= 280:
+                self._post_tweet_with_retry(final_tweet)
+            else:
+                logging.error(f"Tweet still too long after processing: {len(final_tweet)} chars")
+                # Emergency fallback - post just the topic with hashtags
+                emergency_tweet = f"Latest trends in {topic} technology are reshaping the digital landscape with innovative solutions and advanced capabilities. {' '.join(random.sample(self.generator.TOPIC_HASHTAGS[topic], 3))}"
+                if len(emergency_tweet) <= 280:
+                    self._post_tweet_with_retry(emergency_tweet)
             
         except Exception as e:
             logging.error(f"Error in post_tweet: {str(e)}")
