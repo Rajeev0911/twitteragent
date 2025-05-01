@@ -909,10 +909,24 @@ class Config:
                 "top_k": 40,
                 "max_output_tokens": 180,  # Reduced to get shorter responses
             }
+            # List available models first
+            available_models = [model.name for model in genai.list_models()]
+            logging.info(f"Available models: {available_models}")
+            
+            # Use Gemini Flash 2.0
+            model_name = "gemini-flash-2.0"
+            logging.info(f"Using model: {model_name}")
+            
             self.model = genai.GenerativeModel(
-                model_name="gemini-pro",
+                model_name=model_name,
                 generation_config=self.generation_config
             )
+            # Test the model with a simple prompt
+            test_response = self.model.generate_content("Test connection")
+            if not test_response.text:
+                raise Exception("Model returned empty response")
+            logging.info("Google AI initialized successfully")
+            
         except Exception as e:
             logging.error(f"Failed to initialize Google AI: {str(e)}")
             raise
@@ -1142,15 +1156,38 @@ class TwitterBot:
         """Generate tweet using Google AI Studio with retry mechanism"""
         try:
             logging.info(f"Generating tweet with prompt: {prompt[:50]}...")
-            response = self.config.model.generate_content(prompt)
             
-            if response.text:
-                tweet_text = response.text.strip().strip('"\'')
-                logging.info(f"Generated text: {tweet_text[:50]}...")
-                return tweet_text
+            # Add system instructions to ensure proper response format
+            full_prompt = f"""You are a tech-focused Twitter bot. Generate a concise, informative tweet about {topic}.
+            Requirements:
+            - Keep it under 280 characters
+            - Use technical but accessible language
+            - Include key insights or analysis
+            - Be engaging and professional
+            - Focus on the most important information
+            - Use active voice and present tense
             
-            logging.warning("AI returned empty response")
-            return ""
+            Original prompt: {prompt}"""
+            
+            response = self.config.model.generate_content(full_prompt)
+            
+            if not response or not response.text:
+                logging.warning("AI returned empty response")
+                raise Exception("Empty response from AI model")
+                
+            tweet_text = response.text.strip().strip('"\'')
+            logging.info(f"Generated text: {tweet_text[:50]}...")
+            
+            # Validate the generated text
+            if len(tweet_text) > 280:
+                tweet_text = tweet_text[:277] + "..."
+                logging.info("Tweet truncated to fit character limit")
+                
+            if len(tweet_text.split()) < 10:
+                logging.warning("Generated text too short, falling back to pre-written content")
+                raise Exception("Generated text too short")
+                
+            return tweet_text
             
         except Exception as e:
             logging.error(f"Google AI API error: {str(e)}")

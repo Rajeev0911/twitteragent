@@ -81,4 +81,36 @@
 2025-02-19 19:45:18,500 - INFO - Scheduled for tomorrow at 15:00
 2025-02-19 19:45:18,500 - INFO - Scheduled for today at 22:00
 2025-02-19 19:45:18,502 - INFO - Scheduled for tomorrow at 03:00
-2025-02-19 19:45:18,502 - INFO - Next post scheduled for: 2025-02-19 22:00:00 IST
+2025-02-19 19:45:18,502 - INFO - Next post scheduled for: 2025-02-19 22:00:00 IST2025-04-30 16:42:46,944 - INFO - Starting Twitter bot
+2025-04-30 16:42:50,482 - INFO - Twitter API client initialized successfully
+2025-04-30 16:42:50,482 - INFO - ----- Current Bot Status -----
+2025-04-30 16:42:50,482 - INFO - Current time (IST): 2025-04-30 16:42:50 IST
+2025-04-30 16:42:50,482 - INFO - Posts made today: 0/4
+2025-04-30 16:42:50,483 - INFO - No posts made yet
+2025-04-30 16:42:50,483 - INFO - -----------------------------
+2025-04-30 16:42:50,483 - INFO - Scheduled for tomorrow at 09:00
+2025-04-30 16:42:50,483 - INFO - Scheduled for tomorrow at 15:00
+2025-04-30 16:42:50,483 - INFO - Scheduled for today at 22:00
+2025-04-30 16:42:50,483 - INFO - Scheduled for tomorrow at 03:00
+2025-04-30 16:42:50,483 - INFO - ----- Current Bot Status -----
+2025-04-30 16:42:50,483 - INFO - Current time (IST): 2025-04-30 16:42:50 IST
+2025-04-30 16:42:50,483 - INFO - Posts made today: 0/4
+2025-04-30 16:42:50,484 - INFO - No posts made yet
+2025-04-30 16:42:50,484 - INFO - -----------------------------
+2025-04-30 16:42:50,484 - INFO - Attempting to post new tweet...
+2025-04-30 16:42:52,167 - WARNING - News API returned no articles
+2025-04-30 16:42:52,169 - INFO - Using trend prompt - Topic: tech
+2025-04-30 16:42:52,169 - INFO - Generating tweet with prompt: Briefly analyze current tech technology trends in ...
+2025-04-30 16:42:53,259 - ERROR - Google AI API error: 404 models/gemini-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+2025-04-30 16:42:53,259 - INFO - Falling back to pre-written content
+2025-04-30 16:42:53,260 - INFO - Using AI-generated content
+2025-04-30 16:42:55,245 - INFO - Tweet saved to memory: Digital transformation accelerates with integratio...
+2025-04-30 16:42:55,247 - INFO - Next post scheduled for: 2025-04-30 22:42:55 IST
+2025-04-30 16:42:55,247 - INFO - Tweet posted successfully (ID: 1917537646622171372): Digital transformation accelerates with integratio...
+2025-04-30 16:42:55,247 - INFO - ----- Current Bot Status -----
+2025-04-30 16:42:55,248 - INFO - Current time (IST): 2025-04-30 16:42:55 IST
+2025-04-30 16:42:55,248 - INFO - Posts made today: 1/4
+2025-04-30 16:42:55,248 - INFO - Last post: 2025-04-30 16:42:55 IST (0.0 hours ago)
+2025-04-30 16:42:55,248 - INFO - Next post in: 6.0 hours
+2025-04-30 16:42:55,249 - INFO - -----------------------------
+2025-04-30 16:42:55,249 - INFO - Next post scheduled for: 2025-04-30 22:00:00 IST
